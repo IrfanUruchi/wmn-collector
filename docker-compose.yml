@@ -1,0 +1,43 @@
+services:
+  wmn-collector:
+    build: .
+    container_name: wmn-collector
+    restart: unless-stopped
+
+    # Loads values from ./.env (user-specific, not committed)
+    env_file:
+      - .env
+
+    # Persist spool DB across restarts
+    volumes:
+      - wmn_collector_data:/data
+
+    environment:
+      DEVICE_ID: ${DEVICE_ID:-wmn-device}
+
+      MQTT_BROKER: ${MQTT_BROKER}
+      MQTT_PORT: ${MQTT_PORT:-8883}
+      MQTT_USERNAME: ${MQTT_USERNAME:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+      MQTT_TLS: ${MQTT_TLS:-1}
+      MQTT_TOPIC: ${MQTT_TOPIC:-wmn/metrics}
+      MQTT_QOS: ${MQTT_QOS:-0}
+
+      WIFI_IFACE: ${WIFI_IFACE:-wlan0}
+      PING_TARGET: ${PING_TARGET:-1.1.1.1}
+      INTERVAL_SEC: ${INTERVAL_SEC:-5}
+      PING_COUNT: ${PING_COUNT:-5}
+      PING_TIMEOUT_SEC: ${PING_TIMEOUT_SEC:-3}
+
+      SPOOL_DB: /data/spool.db
+      MAX_SPOOL_ROWS: ${MAX_SPOOL_ROWS:-200000}
+      FLUSH_BATCH: ${FLUSH_BATCH:-200}
+
+    # Raspberry Pi / real Linux Wi-Fi access:
+    # - host networking + privileged is the most reliable for `iw`
+    # For WSL/Docker Desktop, you can remove these two lines.
+    network_mode: host
+    privileged: true
+
+volumes:
+  wmn_collector_data:
